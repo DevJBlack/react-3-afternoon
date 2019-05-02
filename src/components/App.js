@@ -1,6 +1,8 @@
 import React, { Component } from 'react';
-
+import axios from 'axios'
 import './App.css';
+import Post from './Post/Post'
+
 
 import Header from './Header/Header';
 import Compose from './Compose/Compose';
@@ -10,7 +12,8 @@ class App extends Component {
     super();
 
     this.state = {
-      posts: []
+      posts: [],
+      baseUrl: 'https://practiceapi.devmountain.com/api'
     };
 
     this.updatePost = this.updatePost.bind( this );
@@ -19,31 +22,54 @@ class App extends Component {
   }
   
   componentDidMount() {
-
+    axios.get(`${this.state.baseUrl}/posts`).then((res) => {
+      this.setState({ posts: res.data })
+      console.log('componentDidMount')
+    }).catch(err => console.log('compoonentDid Not Mount'))
   }
 
-  updatePost() {
-  
+  updatePost(id, text) {
+    axios.put(`${this.state.baseUrl}/posts?id=${id}`, {text} ).then((res) => {
+      this.setState({ posts: res.data })
+      console.log('updatePost')
+    }).catch(err => console.log('did not updatePost'))
   }
 
-  deletePost() {
-
+  deletePost(id) {
+    axios.delete(`${this.state.baseUrl}/posts?id=${id}`).then((res) => {
+      this.setState({ posts: res.data })
+      console.log('deletePost')
+    }).catch(err => console.log('did not deletePost'))
   }
 
-  createPost() {
-
+  createPost(text) {
+    axios.post(`${this.state.baseUrl}/posts`, {text}).then((res) => {
+      this.setState({ posts: res.data })
+      console.log('createPost')
+    }).catch(err => console.log('creatPost not posted'))
   }
 
   render() {
-    const { posts } = this.state;
-
+    const postMap = this.state.posts.map((post) => {
+      return ( <Post key={ post.id }
+        id={post.id} 
+        text={ post.text }
+        date={ post.date }
+        updatePostFn={ this.updatePost}
+        deletePostFn={this.deletePost}
+        /> )
+    })
     return (
       <div className="App__parent">
+
         <Header />
 
         <section className="App__content">
 
-          <Compose />
+          <Compose 
+            createPostFn={this.createPost}
+            />
+          {postMap}
           
         </section>
       </div>
